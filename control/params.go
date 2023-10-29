@@ -15,6 +15,7 @@ const (
 	gitRepo          = "git@github.com:nvizero/demo.git"
 	dockerHubImg     = "19840112/firstphp:0.0.1"
 	ControllerDir    = "/app/Http/Controllers/Admin/"
+	ModelDir         = "/app/Models/"
 	DatabaseDir      = "/database/migrations/"
 	migration_table  = "docker exec %s bash -c \"cd /var/www && php artisan make:migration %s\""
 	migration_table2 = "docker exec %s bash -c \"cd /var/www && php artisan make:migration create_%s_table --create=%s\""

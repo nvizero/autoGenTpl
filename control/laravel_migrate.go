@@ -20,16 +20,49 @@ func GetTbGenerateMigrateTable(projectid int32, projectName string) {
 	}
 	tables, _ := dbpg.WhereTbByPID(ctx, arg)
 	for _, row := range tables {
-		MigrationTable(row.Name.String, projectName, row.ID)
+		//MigrationTable(row.Name.String, projectName, row.ID)
+		CreateModel(row.Name.String, projectName, row.ID)
 	}
 }
 
+// 建立Model
+func CreateModel(tablename, projectName string, tableid int32) {
+	var combinedTxt string
+	var field_txt string
+	var field_setting string
+	directory := localhostDir + "/" + projectName + ModelDir
+	fileName := utils.RemoveS(utils.FirstUpper(tablename))
+	className := fmt.Sprintf("class %s extends BaseModel", fileName)
+	table := fmt.Sprintf("  protected $table = '%s';", utils.FirstLower(tablename))
+	combinedTxt = model_1 + className + model_2 + table
+	arg := sql.NullInt32{Int32: tableid, Valid: true}
+	tbs, _ := dbpg.GetTFBytID(ctx, arg)
+	for _, row := range tbs {
+		field_txt += fmt.Sprintf("'%s',", row.FieldName.String)
+		field_setting += fmt.Sprintf("          '%s' => [\n", row.FieldName.String)
+		field_setting += fmt.Sprintf("               'type' => '%s',\n", row.LaravelMap.String)
+		field_setting += fmt.Sprintf("               'required' => true,\n")
+		field_setting += fmt.Sprintf("               'search' => [\n")
+		field_setting += fmt.Sprintf("                    'level' => 'like',\n")
+		field_setting += fmt.Sprintf("               ]\n")
+		field_setting += fmt.Sprintf("          ],\n")
+	}
+	combinedTxt += model_3 + field_txt + model_4
+	combinedTxt += model_5 + field_setting + model_6
+	saveName := fmt.Sprintf("%s.php", fileName)
+	err := ioutil.WriteFile(directory+saveName, []byte(combinedTxt), 0644)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+}
+
+// 建立migration create table
 func MigrationTable(rep_model, projectName string, tableid int32) {
 	var txt string
 	directory := localhostDir + "/" + projectName + DatabaseDir
 	arg := sql.NullInt32{Int32: tableid, Valid: true}
 	tbs, _ := dbpg.GetTFBytID(ctx, arg)
-	fmt.Println(tbs)
 	for _, row := range tbs {
 		txt += fmt.Sprintf("            $table->%s(\"%s\");\n", row.LaravelMap.String, row.FieldName.String)
 	}
@@ -39,11 +72,9 @@ func MigrationTable(rep_model, projectName string, tableid int32) {
 	migration_end = re.ReplaceAllString(migration_end, rep_model)
 	// 获取当前时间
 	currentTime := time.Now()
-
 	// 格式化时间为 "2006_01_02_150405"
 	timeFormat := currentTime.Format("2006_01_02_150405")
-	// 将替换后的字符串写入文件
-	// 拼接文件名前缀和时间格式
+	// 将替换后的字符串写入文件  拼接文件名前缀和时间格式
 	fileName := timeFormat + fmt.Sprintf("_create_%s.php", utils.FirstLower(rep_model))
 	combinedMigration := migration_head + txt + migration_end
 	err := ioutil.WriteFile(directory+fileName, []byte(combinedMigration), 0644)
@@ -51,5 +82,4 @@ func MigrationTable(rep_model, projectName string, tableid int32) {
 		fmt.Println(err)
 		return
 	}
-	fmt.Printf("\n替换完成，并已将结果保存到文件 %s_migration.php", utils.FirstLower(rep_model))
 }
