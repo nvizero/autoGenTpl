@@ -34,20 +34,17 @@ func (p *GenerLaravel) QueryPj() {
 }
 
 // 建立laravel Controller and migration
-func (p *GenerLaravel) GenLaravelControllerMigration(tb string) {
+func (p *GenerLaravel) GenLaravelController(tb string) {
 	//首字母大寫
 	contName := utils.FirstUpper(tb)
 	//首字母小寫
 	tbName := utils.FirstLower(tb)
 	//用table name 產生 Controller
 	utils.GenController(p.ControllerDir, contName, tbName)
-
+	//run init.sh
 	params = []interface{}{p.projectName, cmd_sh[1]}
 	utils.RunCmd(params, docker_run_sh, statusChan)
 
-	//migrate table
-	params = []interface{}{p.projectName, tbName, tbName}
-	utils.RunCmd(params, migration_table2, statusChan)
 	// 取db
 }
 
@@ -67,7 +64,7 @@ func (p *GenerLaravel) GenerateLaravelModel() {
 			tableid := sql.NullInt32{Int32: tb.ID, Valid: true}
 			tfs, _ := p.Pg.GetTFByfID(ctx, tableid)
 			//執行docker 中 migration
-			p.GenLaravelControllerMigration(tb.Name.String)
+			p.GenLaravelController(tb.Name.String)
 			fmt.Println(tfs, "---empty")
 		}
 	}

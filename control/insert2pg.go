@@ -135,14 +135,14 @@ func (p *Pj) Controller() {
 
 func InitData() {
 	table := map[string]map[string]string{
-		// "fduts": {
-		// 	"title": "string",
-		// 	"body":  "text",
-		// },
-		"xnews": {
+		"qbbts": {
+			"title": "string",
+			"body":  "text",
+		},
+		"gaews": {
 			"title": "string",
 			"local": "string",
-			"body":  "text",
+			"body":  "ckeditor",
 			"cover": "string",
 		},
 	}
@@ -155,23 +155,6 @@ func InitData() {
 	opj.Controller()
 }
 
-// 初始化field參數
-func InitField() {
-	//pp := db.ConnDev()
-	cmds := []string{
-		"text",
-		"number",
-		"file",
-		"string",
-		"select",
-	}
-	for i, cmd := range cmds {
-		// fname := sql.NullString{String: i, Valid: true}
-		// tb, _ := pp.CreateField(context.Background(), fname)
-		// fmt.Println(tb)
-		fmt.Println(i, cmd)
-	}
-}
 func ChkErr(err error) {
 	if err != nil {
 		fmt.Println(err)

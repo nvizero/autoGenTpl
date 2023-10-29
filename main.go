@@ -26,15 +26,14 @@ func main() {
 	// fname := sql.NullString{String: "test", Valid: true}
 	// tb, _ := db.DevQueries.CreateField(context.Background(), fname)
 	// fmt.Println(tb)
-	//初始化欄位
-	//control.InitField()
 	//建立假資料
 	//control.InitData()
 	//測試
 	//control.TestGenLaravel()
+	//建立laravel DB資料
+	control.GetTbGenerateMigrateTable(26, "isb33")
 	//清除測試資料
 	//control.TrancateData()
-	control.GetTbGenerateMigrateTable(21, "isb33")
 }
 
 func createdb() {

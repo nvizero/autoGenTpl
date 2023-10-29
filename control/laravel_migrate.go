@@ -28,7 +28,7 @@ func GetTbGenerateMigrateTable(projectid int32, projectName string) {
 // 建立Model
 func CreateModel(tablename, projectName string, tableid int32) {
 	var combinedTxt string
-	var field_txt string
+	var fields_txt string
 	var field_setting string
 	directory := localhostDir + "/" + projectName + ModelDir
 	fileName := utils.RemoveS(utils.FirstUpper(tablename))
@@ -38,7 +38,7 @@ func CreateModel(tablename, projectName string, tableid int32) {
 	arg := sql.NullInt32{Int32: tableid, Valid: true}
 	tbs, _ := dbpg.GetTFBytID(ctx, arg)
 	for _, row := range tbs {
-		field_txt += fmt.Sprintf("'%s',", row.FieldName.String)
+		fields_txt += fmt.Sprintf("'%s',", row.FieldName.String)
 		field_setting += fmt.Sprintf("          '%s' => [\n", row.FieldName.String)
 		field_setting += fmt.Sprintf("               'type' => '%s',\n", row.LaravelMap.String)
 		field_setting += fmt.Sprintf("               'required' => true,\n")
@@ -47,7 +47,7 @@ func CreateModel(tablename, projectName string, tableid int32) {
 		field_setting += fmt.Sprintf("               ]\n")
 		field_setting += fmt.Sprintf("          ],\n")
 	}
-	combinedTxt += model_3 + field_txt + model_4
+	combinedTxt += model_3 + "       " + fields_txt + model_4
 	combinedTxt += model_5 + field_setting + model_6
 	saveName := fmt.Sprintf("%s.php", fileName)
 	err := ioutil.WriteFile(directory+saveName, []byte(combinedTxt), 0644)
