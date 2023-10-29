@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Web Page</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>{{.Title}}</h1>
+    <form method="post" id="myForm" >
+        <label for="field1">專案名:</label>
+        <input type="text" name="project_name" id="field1">
+        <br>
+        <label for="field2">docker port號:</label>
+        <input type="number" name="port" id="field2">
+        <input type="submit" value="Submit">
+        <br>
+    </form>
+
+    <ul id="messages"></ul>
+
+    <script>
+        const messagesDiv = document.getElementById('messages');
+        const messageInput = document.getElementById('message');
+        const ws = new WebSocket('ws://localhost:8080/ws'); // WebSocket 服务器地址
+
+        ws.onopen = function (event) {
+            addMessage('Connected to WebSocket server');
+        };
+
+        ws.onmessage = function (event) {
+            addMessage( event.data);
+        };
+
+        ws.onclose = function (event) {
+            addMessage('Connection closed');
+        };
+
+        function addMessage(message) {
+            const li = document.createElement('li');
+        // 使用正则表达式查找消息中的链接
+            const linkRegex = /<a href="([^"]+)">([^<]+)<\/a>/g;
+            let match;
+            
+            // 遍历所有匹配的链接并替换它们
+            while ((match = linkRegex.exec(message)) !== null) {
+                const link = document.createElement('a');
+                link.href = match[1];
+                link.textContent = match[2];
+                message = message.replace(match[0], link.outerHTML); // 替换链接为可点击链接
+            }
+
+            li.innerHTML = message; // 将消息添加到 <li> 中
+            if(message.length > 2){
+              messagesDiv.appendChild(li); // 将 <li> 添加到消息列表
+            }
+        }
+
+        // 使用 jQuery 处理表单提交
+        $('#myForm').submit(function (event) {
+            event.preventDefault(); // 阻止表单默认提交
+            $('#messages').empty();
+            // 获取表单数据
+            const formData = {
+                project_name: $('#field1').val(),
+                port: $('#field2').val()
+            };
+
+            // 发送 AJAX POST 请求
+            $.ajax({
+                type: 'POST',
+                url: '/submit', // 设置提交目标
+                data: formData,
+                success: function (response) {
+                    console.log(response)
+                    addMessage(response);
+                },
+                error: function () {
+                    addMessage('Error occurred during the AJAX request.');
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
+

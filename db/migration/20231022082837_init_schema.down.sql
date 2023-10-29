@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS "projects";
+DROP TABLE IF EXISTS "tb";
+DROP TABLE IF EXISTS "tb_fields";
