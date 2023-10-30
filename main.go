@@ -22,18 +22,20 @@ func main() {
 	// DevQueries := db.ConnPq()
 	// defer DevQueries.Close()
 	//插入資料
-
-	// fname := sql.NullString{String: "test", Valid: true}
-	// tb, _ := db.DevQueries.CreateField(context.Background(), fname)
-	// fmt.Println(tb)
+	//generate
+	//    0.get data from web [not ya]
+	//    1.init data to postgresql
+	//    2.run laravel docker
+	//    3.run laravel controller database model router sidemenu
 	//建立假資料
-	control.InitData()
+	lara := control.InitFakeData()
 	//測試
-	control.TestGenLaravel()
+	//control.TestGenLaravel()
 	//建立laravel DB資料
-	//control.GetTbGenerateMigrateTable(26, "isb33")
+	control.GetTbGenerateMigrateTable(lara.ProjectID, lara.ProjectName)
+	// control.GetTbGenerateMigrateTable(61, "isb32")
 	//清除測試資料
-	//control.TrancateData()
+	//	control.TrancateData()
 }
 
 func createdb() {

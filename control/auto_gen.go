@@ -10,12 +10,20 @@ import (
 // func GenLaravel(statusChan chan string, wg *sync.WaitGroup) {
 func GenLaravel(statusChan chan string) {
 	//defer wg.Done()
-	projectName := fmt.Sprintf("%s%d", project_name, No)
-	dockerPort := fmt.Sprintf("%d%d:80", port_serial, No)
-	port := fmt.Sprintf("%d%d", port_serial, No)
+	var projectName string
+	var dockerPort string
+	var port string
+	if Project.ProjectName != "" {
+		projectName = fmt.Sprintf("%s", Project.ProjectName)
+		dockerPort = fmt.Sprintf("%d:80", Project.DockerPort)
+		port = fmt.Sprintf("%d", Project.DockerPort)
+	} else {
+		// projectName = fmt.Sprintf("%s%d", project_name, No)
+		// dockerPort = fmt.Sprintf("%d%d:80", port_serial, No)
+		// port = fmt.Sprintf("%d%d", port_serial, No)
+	}
 	visit := fmt.Sprintf("http://127.0.0.1:%s", port)
 	projectDir := localhostDir + "/" + projectName
-	//ControllerDir := projectDir + ControllerDir
 	dockerVPara := projectDir + ":" + dockerDir
 
 	//建立DB
@@ -32,11 +40,11 @@ func GenLaravel(statusChan chan string) {
 	RunDockerCmd(projectName, dockerVPara, dockerPort, dockerHubImg, laravel_update, statusChan)
 
 	//	建立額外laravel功能
-	statusChan <- "建立額外laravel功能"
-	Laravel(projectName, ControllerDir, ControllerName, TableName, statusChan)
+	//statusChan <- "建立額外laravel功能"
+	//	Laravel(projectName, ControllerDir, ControllerName, TableName, statusChan)
 
-	statusChan <- "推上git分支"
-	GitPushBranch(projectName, projectDir, statusChan)
+	//statusChan <- "推上git分支"
+	//GitPushBranch(projectName, projectDir, statusChan)
 	defer func() {
 		statusChan <- "generate laravel docker success"
 		statusChan <- fmt.Sprintf("建立專案%s完成!!", projectName)

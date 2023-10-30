@@ -2,7 +2,6 @@ package control
 
 import (
 	"database/sql"
-	"fmt"
 	"tpl/cache"
 	db "tpl/db/sqlc"
 	"tpl/utils"
@@ -12,18 +11,18 @@ import (
 
 // var 	utils.GenController(ControllerDir, ContName, TableName)
 
-type GenerLaravel struct {
+type LaravelFactory struct {
 	Projects      []db.Project
-	Pid           int32
+	PorjectId     int32
 	Pg            *db.Queries
 	Redis         *redis.Client
-	projectName   string
-	projectDir    string
+	ProjectName   string
+	ProjectDir    string
 	ControllerDir string
 }
 
 // query project
-func (p *GenerLaravel) QueryPj() {
+func (p *LaravelFactory) QueryPj() {
 	arg := db.ListProjectsParams{
 		Limit:  1,
 		Offset: 0,
@@ -31,11 +30,12 @@ func (p *GenerLaravel) QueryPj() {
 	project, err := p.Pg.ListProjects(ctx, arg)
 	ChkErr(err)
 	p.Projects = project
-	p.Pid = project[0].ID
+	p.ProjectName = project[0].Name.String
+	p.PorjectId = project[0].ID
 }
 
 // 建立laravel Controller
-func (p *GenerLaravel) GenLaravelController(tb string) {
+func (p *LaravelFactory) GenLaravelController(tb string) {
 	//首字母大寫
 	contName := utils.FirstUpper(tb)
 	//首字母小寫
@@ -45,13 +45,13 @@ func (p *GenerLaravel) GenLaravelController(tb string) {
 }
 
 // query project's table
-func (p *GenerLaravel) GenerateLaravelModel() {
+func (p *LaravelFactory) GenerateLaravelModel() {
 
 	if p.Projects != nil {
 		arg := db.WhereTbByPIDParams{
 			Limit:     10,
 			Offset:    0,
-			ProjectID: sql.NullInt32{Int32: p.Pid, Valid: true},
+			ProjectID: sql.NullInt32{Int32: p.PorjectId, Valid: true},
 		}
 		tbs, err := p.Pg.WhereTbByPID(ctx, arg)
 		ChkErr(err)
@@ -66,23 +66,24 @@ func (p *GenerLaravel) GenerateLaravelModel() {
 	}
 }
 
-func (p *GenerLaravel) DoTest() {
+func (p *LaravelFactory) DoTest() {
 	p.QueryPj()
-	p.GenerateLaravelModel()
+	//p.GenerateLaravelModel()
 	//query fields
 	//query table ref fields
 }
 
 // 自動generate laravel
-func TestGenLaravel() {
-	gl := GenerLaravel{
+func TestGenLaravel() LaravelFactory {
+	gl := LaravelFactory{
 		Pg:            db.ConnDev(),
 		Redis:         cache.Conn2Redis(),
-		projectName:   fmt.Sprintf("%s%d", project_name, No),
-		projectDir:    localhostDir + "/" + fmt.Sprintf("%s%d", project_name, No),
-		ControllerDir: localhostDir + "/" + fmt.Sprintf("%s%d", project_name, No) + ControllerDir,
+		ProjectName:   Project.ProjectName,
+		ProjectDir:    localhostDir + "/" + Project.ProjectName,
+		ControllerDir: localhostDir + "/" + Project.ProjectName + ControllerDir,
 	}
 	gl.DoTest()
+	return gl
 }
 
 func TrancateData() {

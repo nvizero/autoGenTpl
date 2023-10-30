@@ -9,7 +9,7 @@ import (
 // 執行DOCKER 內命令
 func RunCmd(params []interface{}, cmd string, statusChan chan string) {
 	cmdStr := fmt.Sprintf(cmd, params...)
-	fmt.Println("run ------\n ", cmdStr)
+	fmt.Println("-- run --\n", cmdStr)
 	//out, err := exec.Command("/bin/sh", "-c", cmdStr).Output()
 	_, err := exec.Command("/bin/sh", "-c", cmdStr).Output()
 	if err != nil {

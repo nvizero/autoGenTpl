@@ -56,6 +56,7 @@ func UpdateEnv(prodName, localDir, port, laravelPath string) {
 	config["DB_HOST"] = fmt.Sprintf("172.17.0.5")
 	config["APP_KEY"] = fmt.Sprintf("base64:yA/8JhlITdW/zo5/+A6XKrbLppTlA1bhTcspdeUjIDs=")
 	// 创建一个新文件并将修改后的配置写入其中
+	fmt.Println(localDir)
 	// 写入修改后的配置到新文件
 	for key, value := range config {
 		line := key + "=" + value + "\n"
@@ -81,7 +82,8 @@ func GenController(dir, cname, table string) {
 	newPhpStr := strings.Replace(phpStr, "posts", table, -1)
 	newPhpStr = strings.Replace(newPhpStr, "Post", cname, -1)
 	// 将修改后的内容写回到文件
-	err = ioutil.WriteFile(dir+cname+"Controller.php", []byte(newPhpStr), 0644)
+	controllerPreName := RemoveS(cname)
+	err = ioutil.WriteFile(dir+controllerPreName+"Controller.php", []byte(newPhpStr), 0644)
 	if err != nil {
 		fmt.Println("无法写入修改后的 PHP 文件:", err)
 		return

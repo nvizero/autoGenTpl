@@ -1,9 +1,10 @@
 package control
 
 var (
-	project_name string = "isb"
-	port_serial  int    = 55
-	No           int    = 33
+	Project      Pj
+	project_name string
+	port_serial  int
+	No           int
 	status       chan string
 	params       = []interface{}{}
 	cmd_sh       = []string{"/var/www/mkd.sh", "/var/www/init.sh"}

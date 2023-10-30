@@ -15,7 +15,8 @@ var ctx = context.Background()
 
 type Pj struct {
 	ProjectName string
-	Pid         int32
+	ProjectID   int32
+	DockerPort  int32
 	Tables      map[string]map[string]string
 	FieldKey    map[string]string
 	Pg          *db.Queries
@@ -39,13 +40,13 @@ func (p *Pj) GenProject() {
 	}
 	project, err := p.Pg.CreateProjects(context.Background(), arg)
 	ChkErr(err)
-	p.Pid = project.ID
+	p.ProjectID = project.ID
 }
 
 func (p *Pj) GenTable(table string) int32 {
 	arg := db.CreateTbParams{
 		Name:      sql.NullString{String: table, Valid: true},
-		ProjectID: sql.NullInt32{Int32: p.Pid, Valid: true},
+		ProjectID: sql.NullInt32{Int32: p.ProjectID, Valid: true},
 		Describe:  sql.NullString{String: utils.RandomString(20), Valid: true},
 	}
 	t, err := p.Pg.CreateTb(context.Background(), arg)
@@ -92,65 +93,47 @@ func (p *Pj) Parse2TableField() {
 	for table, fields := range p.Tables {
 		tableId := p.GenTable(table)
 		for k, v := range fields {
-			fmt.Println("====", k, v)
 			arg := db.CreateTbFieldParams{
 				TableID:    sql.NullInt32{Int32: tableId, Valid: true},
 				FieldName:  sql.NullString{String: k, Valid: true},
 				LaravelMap: sql.NullString{String: v, Valid: true},
 			}
-			tf, err := p.Pg.CreateTbField(context.Background(), arg)
+			_, err := p.Pg.CreateTbField(context.Background(), arg)
 			ChkErr(err)
-			fmt.Println(tf)
+			//fmt.Println(tf)
 
 		}
 	}
 }
 
-// check has redis
-func (p *Pj) ChkFieldRedis() {
-	// if !p.CheckFieldsRedis(rkey) {
-	// 	var tmp map[string]string
-	// 	tmp = make(map[string]string) // 初始化 tmp 映射
-	// 	for _, row := range fls {
-	// 		tmp[row.Name.String] = fmt.Sprintf("%d", row.ID)
-
-	// 	}
-	// 	p.WriteToRedis(tmp, rkey)
-	// 	p.FieldKey = tmp
-	// } else {
-	// 	p.FieldKey = p.ReadFromRedis(rkey)
-	// }
-}
-
 func (p *Pj) Controller() {
 	//是否有相同名稱
-	// if !p.ChkProjectName() {
-	p.GenProject()
-	//查看field是否在redis
-	// p.ChkFieldRedis()
-	p.Parse2TableField()
-	// }
+	if !p.ChkProjectName() {
+		p.GenProject()
+		p.Parse2TableField()
+	}
 }
 
-func InitData() {
-	table := map[string]map[string]string{
-		"qbbts": {
-			"title": "string",
+func InitFakeData() Pj {
+	fakeData := map[string]map[string]string{
+		"cats": {
+			"name": "text",
+			"body": "text",
+		},
+		"dogs": {
 			"body":  "text",
-		},
-		"gaews": {
-			"title": "string",
-			"local": "string",
-			"body":  "ckeditor",
-			"cover": "string",
+			"cover": "text",
 		},
 	}
-	opj := Pj{
+	Project = Pj{
 		Pg:          db.ConnDev(),
-		ProjectName: "isb2",
-		Tables:      table,
+		ProjectName: "isb35",
+		DockerPort:  2035,
+		Tables:      fakeData,
 	}
-	opj.Controller()
+	Project.Controller()
+	GenLaravel(statusChan)
+	return Project
 }
 
 func ChkErr(err error) {

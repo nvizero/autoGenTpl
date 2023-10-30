@@ -72,9 +72,9 @@ func RunDockerCmd(projectName, dockerVPara, dockerPort, dockerHubImg, laravel_up
 	utils.RunCmd(params, laravel_update_cmd, statusChan)
 
 	//建立 基本 database 執行php artisan migrate
-	statusChan <- "建立 基本 database 執行php artisan migrate"
-	params = []interface{}{projectName, cmd_sh[1]}
-	utils.RunCmd(params, docker_run_sh, statusChan)
+	// statusChan <- "建立 基本 database 執行php artisan migrate"
+	// params = []interface{}{projectName, cmd_sh[1]}
+	// utils.RunCmd(params, docker_run_sh, statusChan)
 }
 
 var txt = `
