@@ -10,7 +10,12 @@ import (
 	"tpl/utils"
 )
 
-var dbpg = db.ConnDev()
+var (
+	dbpg           = db.ConnDev()
+	router_web_txt string
+	sidemenu_txt   string
+	combinedTxt    string
+)
 
 func GetTbGenerateMigrateTable(projectid int32, projectName string) {
 	arg := db.WhereTbByPIDParams{
@@ -21,13 +26,46 @@ func GetTbGenerateMigrateTable(projectid int32, projectName string) {
 	tables, _ := dbpg.WhereTbByPID(ctx, arg)
 	for _, row := range tables {
 		//MigrationTable(row.Name.String, projectName, row.ID)
-		CreateModel(row.Name.String, projectName, row.ID)
+		//CreateModel(row.Name.String, projectName, row.ID)
+		// CollectRouter(row.Name.String)
+		CollectSideMenu(row.Name.String)
 	}
+	//CreateRouter(projectName)
+	CreateSideMenu(projectName)
 }
 
-// 建立Model
+// 收集ControllerName建立sidemenu
+func CollectSideMenu(tablename string) {
+	router_web_txt += fmt.Sprintf("                    <li><a href=\"{{ route('%s.index') }}\">%s</a></li>\n", tablename, tablename)
+}
+
+// 收集ControllerName建立router
+func CollectRouter(tablename string) {
+	firstname := utils.FirstLower(tablename)
+	ControllerName := utils.RemoveS(utils.FirstUpper(tablename))
+	router_web_txt += fmt.Sprintf("    Route::resource('%s', '%sController');\n", firstname, ControllerName)
+}
+
+// 建立 sidemenu.blade.php
+func CreateSideMenu(projectName string) {
+	directory := localhostDir + "/" + projectName + SideMenuDir
+	combinedTxt = sidemenu_head + router_web_txt + sidemenu_footer
+	saveName := fmt.Sprintf("sidemenu.blade.php")
+	err := ioutil.WriteFile(directory+saveName, []byte(combinedTxt), 0644)
+	ChkErr(err)
+}
+
+// 建立/router/web.php
+func CreateRouter(projectName string) {
+	directory := localhostDir + "/" + projectName + RouterDir
+	combinedTxt = router_head + router_web_txt + router_footer
+	saveName := fmt.Sprintf("web.php")
+	err := ioutil.WriteFile(directory+saveName, []byte(combinedTxt), 0644)
+	ChkErr(err)
+}
+
+// 建立Model .php
 func CreateModel(tablename, projectName string, tableid int32) {
-	var combinedTxt string
 	var fields_txt string
 	var field_setting string
 	directory := localhostDir + "/" + projectName + ModelDir
