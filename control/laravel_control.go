@@ -27,7 +27,7 @@ func GetTbGenerateMigrateTable(projectid int32, projectName string) {
 	for _, row := range tables {
 		//MigrationTable(row.Name.String, projectName, row.ID)
 		//CreateModel(row.Name.String, projectName, row.ID)
-		// CollectRouter(row.Name.String)
+		//CollectRouter(row.Name.String)
 		CollectSideMenu(row.Name.String)
 	}
 	//CreateRouter(projectName)

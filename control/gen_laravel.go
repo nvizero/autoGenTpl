@@ -25,7 +25,7 @@ type GenerLaravel struct {
 // query project
 func (p *GenerLaravel) QueryPj() {
 	arg := db.ListProjectsParams{
-		Limit:  10,
+		Limit:  1,
 		Offset: 0,
 	}
 	project, err := p.Pg.ListProjects(ctx, arg)
@@ -59,13 +59,13 @@ func (p *GenerLaravel) GenerateLaravelModel() {
 		}
 		tbs, err := p.Pg.WhereTbByPID(ctx, arg)
 		ChkErr(err)
-		for i, tb := range tbs {
-			fmt.Println(i, tb, "--------------- empty")
-			tableid := sql.NullInt32{Int32: tb.ID, Valid: true}
-			tfs, _ := p.Pg.GetTFByfID(ctx, tableid)
+		for _, tb := range tbs {
+			//fmt.Println(i, tb, "--------------- empty")
+			//tableid := sql.NullInt32{Int32: tb.ID, Valid: true}
+			// tfs, _ := p.Pg.GetTFByfID(ctx, tableid)
 			//執行docker 中 migration
 			p.GenLaravelController(tb.Name.String)
-			fmt.Println(tfs, "---empty")
+			//fmt.Println(tfs, "---empty")
 		}
 	}
 }

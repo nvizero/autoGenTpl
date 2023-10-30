@@ -27,11 +27,11 @@ func main() {
 	// tb, _ := db.DevQueries.CreateField(context.Background(), fname)
 	// fmt.Println(tb)
 	//建立假資料
-	//control.InitData()
+	control.InitData()
 	//測試
-	//control.TestGenLaravel()
+	control.TestGenLaravel()
 	//建立laravel DB資料
-	control.GetTbGenerateMigrateTable(26, "isb33")
+	//control.GetTbGenerateMigrateTable(26, "isb33")
 	//清除測試資料
 	//control.TrancateData()
 }

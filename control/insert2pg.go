@@ -15,16 +15,16 @@ var rkey string = "fields"
 var ctx = context.Background()
 
 type Pj struct {
-	Pname    string
-	Pid      int32
-	Tables   map[string]map[string]string
-	FieldKey map[string]string
-	Pg       *db.Queries
-	Redis    *redis.Client
+	ProjectName string
+	Pid         int32
+	Tables      map[string]map[string]string
+	FieldKey    map[string]string
+	Pg          *db.Queries
+	Redis       *redis.Client
 }
 
 func (p *Pj) ChkProjectName() bool {
-	arg := sql.NullString{String: p.Pname, Valid: true}
+	arg := sql.NullString{String: p.ProjectName, Valid: true}
 	project, err := p.Pg.GetProjectByName(context.Background(), arg)
 	ChkErr(err)
 	if project.ID == 0 {
@@ -35,7 +35,7 @@ func (p *Pj) ChkProjectName() bool {
 
 func (p *Pj) GenProject() {
 	arg := db.CreateProjectsParams{
-		Name:  sql.NullString{String: p.Pname, Valid: true},
+		Name:  sql.NullString{String: p.ProjectName, Valid: true},
 		IsGen: sql.NullInt32{Int32: 0, Valid: true},
 	}
 	project, err := p.Pg.CreateProjects(context.Background(), arg)
@@ -147,10 +147,10 @@ func InitData() {
 		},
 	}
 	opj := Pj{
-		Pg:     db.ConnDev(),
-		Redis:  cache.Conn2Redis(),
-		Pname:  "isb2",
-		Tables: table,
+		Pg:          db.ConnDev(),
+		Redis:       cache.Conn2Redis(),
+		ProjectName: "isb2",
+		Tables:      table,
 	}
 	opj.Controller()
 }
