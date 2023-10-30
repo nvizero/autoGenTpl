@@ -31,9 +31,10 @@ func (p *GenerLaravel) QueryPj() {
 	project, err := p.Pg.ListProjects(ctx, arg)
 	ChkErr(err)
 	p.Projects = project
+	p.Pid = project[0].ID
 }
 
-// 建立laravel Controller and migration
+// 建立laravel Controller
 func (p *GenerLaravel) GenLaravelController(tb string) {
 	//首字母大寫
 	contName := utils.FirstUpper(tb)
@@ -41,11 +42,6 @@ func (p *GenerLaravel) GenLaravelController(tb string) {
 	tbName := utils.FirstLower(tb)
 	//用table name 產生 Controller
 	utils.GenController(p.ControllerDir, contName, tbName)
-	//run init.sh
-	params = []interface{}{p.projectName, cmd_sh[1]}
-	utils.RunCmd(params, docker_run_sh, statusChan)
-
-	// 取db
 }
 
 // query project's table
@@ -55,7 +51,7 @@ func (p *GenerLaravel) GenerateLaravelModel() {
 		arg := db.WhereTbByPIDParams{
 			Limit:     10,
 			Offset:    0,
-			ProjectID: sql.NullInt32{Int32: p.Projects[0].ID, Valid: true},
+			ProjectID: sql.NullInt32{Int32: p.Pid, Valid: true},
 		}
 		tbs, err := p.Pg.WhereTbByPID(ctx, arg)
 		ChkErr(err)

@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"tpl/cache"
 	db "tpl/db/sqlc"
 	"tpl/utils"
 
@@ -148,7 +147,6 @@ func InitData() {
 	}
 	opj := Pj{
 		Pg:          db.ConnDev(),
-		Redis:       cache.Conn2Redis(),
 		ProjectName: "isb2",
 		Tables:      table,
 	}
