@@ -1,5 +1,13 @@
 package control
 
+type LaraSetting struct {
+	Field     string
+	ShowName  string
+	Migration string
+	ModelType string
+	IsRequire int32
+}
+
 var (
 	Project      Pj
 	project_name string

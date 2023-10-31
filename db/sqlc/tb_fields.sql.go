@@ -14,25 +14,41 @@ const createTbField = `-- name: CreateTbField :one
 INSERT INTO tb_fields (
     table_id,
     field_name,
-    laravel_map
+    show_name,
+    migration,
+    model_type,
+    is_require
 ) VALUES (
-  $1, $2, $3
-) RETURNING id, field_name, laravel_map, table_id
+  $1, $2, $3, $4, $5, $6
+) RETURNING id, field_name, show_name, migration, model_type, is_require, table_id
 `
 
 type CreateTbFieldParams struct {
-	TableID    sql.NullInt32  `json:"table_id"`
-	FieldName  sql.NullString `json:"field_name"`
-	LaravelMap sql.NullString `json:"laravel_map"`
+	TableID   sql.NullInt32  `json:"table_id"`
+	FieldName sql.NullString `json:"field_name"`
+	ShowName  sql.NullString `json:"show_name"`
+	Migration sql.NullString `json:"migration"`
+	ModelType sql.NullString `json:"model_type"`
+	IsRequire sql.NullInt32  `json:"is_require"`
 }
 
 func (q *Queries) CreateTbField(ctx context.Context, arg CreateTbFieldParams) (TbField, error) {
-	row := q.db.QueryRowContext(ctx, createTbField, arg.TableID, arg.FieldName, arg.LaravelMap)
+	row := q.db.QueryRowContext(ctx, createTbField,
+		arg.TableID,
+		arg.FieldName,
+		arg.ShowName,
+		arg.Migration,
+		arg.ModelType,
+		arg.IsRequire,
+	)
 	var i TbField
 	err := row.Scan(
 		&i.ID,
 		&i.FieldName,
-		&i.LaravelMap,
+		&i.ShowName,
+		&i.Migration,
+		&i.ModelType,
+		&i.IsRequire,
 		&i.TableID,
 	)
 	return i, err
@@ -49,7 +65,7 @@ func (q *Queries) DeleteTbFieldByTableID(ctx context.Context, tableID sql.NullIn
 }
 
 const getTFByfID = `-- name: GetTFByfID :many
-SELECT id, field_name, laravel_map, table_id FROM tb_fields 
+SELECT id, field_name, show_name, migration, model_type, is_require, table_id FROM tb_fields
 WHERE table_id = $1
 `
 
@@ -65,7 +81,10 @@ func (q *Queries) GetTFByfID(ctx context.Context, tableID sql.NullInt32) ([]TbFi
 		if err := rows.Scan(
 			&i.ID,
 			&i.FieldName,
-			&i.LaravelMap,
+			&i.ShowName,
+			&i.Migration,
+			&i.ModelType,
+			&i.IsRequire,
 			&i.TableID,
 		); err != nil {
 			return nil, err
@@ -82,7 +101,7 @@ func (q *Queries) GetTFByfID(ctx context.Context, tableID sql.NullInt32) ([]TbFi
 }
 
 const getTFBytID = `-- name: GetTFBytID :many
-SELECT id, field_name, laravel_map, table_id FROM tb_fields 
+SELECT id, field_name, show_name, migration, model_type, is_require, table_id FROM tb_fields
 WHERE table_id = $1
 `
 
@@ -98,7 +117,10 @@ func (q *Queries) GetTFBytID(ctx context.Context, tableID sql.NullInt32) ([]TbFi
 		if err := rows.Scan(
 			&i.ID,
 			&i.FieldName,
-			&i.LaravelMap,
+			&i.ShowName,
+			&i.Migration,
+			&i.ModelType,
+			&i.IsRequire,
 			&i.TableID,
 		); err != nil {
 			return nil, err
@@ -115,7 +137,7 @@ func (q *Queries) GetTFBytID(ctx context.Context, tableID sql.NullInt32) ([]TbFi
 }
 
 const listTbField = `-- name: ListTbField :many
-SELECT id, field_name, laravel_map, table_id FROM tb_fields
+SELECT id, field_name, show_name, migration, model_type, is_require, table_id FROM tb_fields
 ORDER BY id desc
 LIMIT $1
 OFFSET $2
@@ -138,7 +160,10 @@ func (q *Queries) ListTbField(ctx context.Context, arg ListTbFieldParams) ([]TbF
 		if err := rows.Scan(
 			&i.ID,
 			&i.FieldName,
-			&i.LaravelMap,
+			&i.ShowName,
+			&i.Migration,
+			&i.ModelType,
+			&i.IsRequire,
 			&i.TableID,
 		); err != nil {
 			return nil, err

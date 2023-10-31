@@ -14,9 +14,12 @@ func CreateTbFields(t *testing.T) {
 	tb := GetTbList(t)
 	if tb[0].ID > 0 {
 		arg := CreateTbFieldParams{
-			TableID:    sql.NullInt32{Int32: tb[0].ID, Valid: true},
-			FieldName:  sql.NullString{String: utils.RandomString(10), Valid: true},
-			LaravelMap: sql.NullString{String: utils.RandomString(10), Valid: true},
+			TableID:   sql.NullInt32{Int32: tb[0].ID, Valid: true},
+			FieldName: sql.NullString{String: utils.RandomString(10), Valid: true},
+			Migration: sql.NullString{String: utils.RandomString(10), Valid: true},
+			ShowName:  sql.NullString{String: utils.RandomString(10), Valid: true},
+			ModelType: sql.NullString{String: utils.RandomString(10), Valid: true},
+			IsRequire: sql.NullInt32{Int32: 1, Valid: true},
 		}
 		fmt.Println(arg)
 		tf, err := testQueries.CreateTbField(context.Background(), arg)
@@ -29,8 +32,4 @@ func CreateTbFields(t *testing.T) {
 // test list project
 func TestCreateTbFields(t *testing.T) {
 	CreateTbFields(t)
-}
-
-func GetTBField(t *testing.T) {
-
 }

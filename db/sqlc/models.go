@@ -12,6 +12,7 @@ import (
 type Project struct {
 	ID        int32          `json:"id"`
 	Name      sql.NullString `json:"name"`
+	Port      sql.NullInt32  `json:"port"`
 	IsGen     sql.NullInt32  `json:"is_gen"`
 	CreatedAt time.Time      `json:"created_at"`
 }
@@ -25,8 +26,11 @@ type Tb struct {
 }
 
 type TbField struct {
-	ID         int32          `json:"id"`
-	FieldName  sql.NullString `json:"field_name"`
-	LaravelMap sql.NullString `json:"laravel_map"`
-	TableID    sql.NullInt32  `json:"table_id"`
+	ID        int32          `json:"id"`
+	FieldName sql.NullString `json:"field_name"`
+	ShowName  sql.NullString `json:"show_name"`
+	Migration sql.NullString `json:"migration"`
+	ModelType sql.NullString `json:"model_type"`
+	IsRequire sql.NullInt32  `json:"is_require"`
+	TableID   sql.NullInt32  `json:"table_id"`
 }

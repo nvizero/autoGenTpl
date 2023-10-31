@@ -104,8 +104,8 @@ func CreateModel(tablename, projectName string, tableid int32) {
 	for _, row := range tbs {
 		fields_txt += fmt.Sprintf("'%s',", row.FieldName.String)
 		field_setting += fmt.Sprintf("          '%s' => [\n", row.FieldName.String)
-		field_setting += fmt.Sprintf("               'type' => '%s',\n", row.LaravelMap.String)
-		field_setting += fmt.Sprintf("               'required' => true,\n")
+		field_setting += fmt.Sprintf("               'type' => '%s',\n", row.ModelType.String)
+		field_setting += fmt.Sprintf("               'required' => %d,\n", row.IsRequire.Int32)
 		field_setting += fmt.Sprintf("               'search' => [\n")
 		field_setting += fmt.Sprintf("                    'level' => 'like',\n")
 		field_setting += fmt.Sprintf("               ]\n")
@@ -130,7 +130,7 @@ func MigrationTable(rep_model, projectName string, tableid int32) {
 	arg := sql.NullInt32{Int32: tableid, Valid: true}
 	tbs, _ := dbpg.GetTFBytID(ctx, arg)
 	for _, row := range tbs {
-		txt += fmt.Sprintf("            $table->%s(\"%s\");\n", row.LaravelMap.String, row.FieldName.String)
+		txt += fmt.Sprintf("            $table->%s(\"%s\");\n", row.Migration.String, row.FieldName.String)
 	}
 	// 不区分大小写替换 "xnews" 为 "abc"
 	re := regexp.MustCompile(`(?i)xnews`)

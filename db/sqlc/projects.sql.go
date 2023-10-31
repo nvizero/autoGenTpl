@@ -13,23 +13,26 @@ import (
 const createProjects = `-- name: CreateProjects :one
 INSERT INTO projects (
     name,
+    port,
     is_gen	
 ) VALUES (
-  $1, $2
-) RETURNING id, name, is_gen, created_at
+  $1, $2, $3
+) RETURNING id, name, port, is_gen, created_at
 `
 
 type CreateProjectsParams struct {
 	Name  sql.NullString `json:"name"`
+	Port  sql.NullInt32  `json:"port"`
 	IsGen sql.NullInt32  `json:"is_gen"`
 }
 
 func (q *Queries) CreateProjects(ctx context.Context, arg CreateProjectsParams) (Project, error) {
-	row := q.db.QueryRowContext(ctx, createProjects, arg.Name, arg.IsGen)
+	row := q.db.QueryRowContext(ctx, createProjects, arg.Name, arg.Port, arg.IsGen)
 	var i Project
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Port,
 		&i.IsGen,
 		&i.CreatedAt,
 	)
@@ -47,7 +50,7 @@ func (q *Queries) DeleteProject(ctx context.Context, id int32) error {
 }
 
 const getProject = `-- name: GetProject :one
-SELECT id, name, is_gen, created_at FROM projects
+SELECT id, name, port, is_gen, created_at FROM projects
 WHERE id = $1 LIMIT 1
 `
 
@@ -57,6 +60,7 @@ func (q *Queries) GetProject(ctx context.Context, id int32) (Project, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Port,
 		&i.IsGen,
 		&i.CreatedAt,
 	)
@@ -64,7 +68,7 @@ func (q *Queries) GetProject(ctx context.Context, id int32) (Project, error) {
 }
 
 const getProjectByName = `-- name: GetProjectByName :one
-SELECT id, name, is_gen, created_at FROM projects
+SELECT id, name, port, is_gen, created_at FROM projects
 WHERE name like $1
 `
 
@@ -74,6 +78,7 @@ func (q *Queries) GetProjectByName(ctx context.Context, name sql.NullString) (Pr
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Port,
 		&i.IsGen,
 		&i.CreatedAt,
 	)
@@ -81,7 +86,7 @@ func (q *Queries) GetProjectByName(ctx context.Context, name sql.NullString) (Pr
 }
 
 const listProjects = `-- name: ListProjects :many
-SELECT id, name, is_gen, created_at FROM projects
+SELECT id, name, port, is_gen, created_at FROM projects
 ORDER BY id desc
 LIMIT $1
 OFFSET $2
@@ -104,6 +109,7 @@ func (q *Queries) ListProjects(ctx context.Context, arg ListProjectsParams) ([]P
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.Port,
 			&i.IsGen,
 			&i.CreatedAt,
 		); err != nil {

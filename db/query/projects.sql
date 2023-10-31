@@ -1,9 +1,10 @@
 -- name: CreateProjects :one
 INSERT INTO projects (
     name,
+    port,
     is_gen	
 ) VALUES (
-  $1, $2
+  $1, $2, $3
 ) RETURNING *;
 
 -- name: GetProjectByName :one

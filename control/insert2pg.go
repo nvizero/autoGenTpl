@@ -17,7 +17,7 @@ type Pj struct {
 	ProjectName string
 	ProjectID   int32
 	DockerPort  int32
-	Tables      map[string]map[string]string
+	Tables      map[string][]LaraSetting
 	FieldKey    map[string]string
 	Pg          *db.Queries
 	Redis       *redis.Client
@@ -92,11 +92,14 @@ func (p *Pj) WriteToRedis(data map[string]string, hashKey string) {
 func (p *Pj) Parse2TableField() {
 	for table, fields := range p.Tables {
 		tableId := p.GenTable(table)
-		for k, v := range fields {
+		for _, v := range fields {
 			arg := db.CreateTbFieldParams{
-				TableID:    sql.NullInt32{Int32: tableId, Valid: true},
-				FieldName:  sql.NullString{String: k, Valid: true},
-				LaravelMap: sql.NullString{String: v, Valid: true},
+				TableID:   sql.NullInt32{Int32: tableId, Valid: true},
+				FieldName: sql.NullString{String: v.Field, Valid: true},
+				Migration: sql.NullString{String: v.Migration, Valid: true},
+				ShowName:  sql.NullString{String: v.ShowName, Valid: true},
+				ModelType: sql.NullString{String: v.ModelType, Valid: true},
+				IsRequire: sql.NullInt32{Int32: v.IsRequire, Valid: true},
 			}
 			_, err := p.Pg.CreateTbField(context.Background(), arg)
 			ChkErr(err)
@@ -115,21 +118,21 @@ func (p *Pj) Controller() {
 }
 
 func InitFakeData() Pj {
-	fakeData := map[string]map[string]string{
+	fdata := map[string][]LaraSetting{
 		"cats": {
-			"name": "text",
-			"body": "text",
+			{"name", "名字", "string", "text", 1},
+			{"sex", "性別", "text", "ckeditor", 1},
 		},
 		"dogs": {
-			"body":  "text",
-			"cover": "text",
+			{"name", "名字", "string", "text", 1},
+			{"sex", "性別", "text", "ckeditor", 1},
 		},
 	}
 	Project = Pj{
 		Pg:          db.ConnDev(),
-		ProjectName: "isb35",
-		DockerPort:  2035,
-		Tables:      fakeData,
+		ProjectName: "isb82",
+		DockerPort:  2082,
+		Tables:      fdata,
 	}
 	Project.Controller()
 	GenLaravel(statusChan)
