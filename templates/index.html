@@ -3,20 +3,27 @@
 <head>
     <title>My Web Page</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 <body>
     <h1>{{.Title}}</h1>
-    <form method="post" id="myForm" >
-        <label for="field1">專案名:</label>
-        <input type="text" name="project_name" id="field1">
-        <br>
-        <label for="field2">docker port號:</label>
-        <input type="number" name="port" id="field2">
-        <input type="submit" value="Submit">
-        <br>
-    </form>
-
-    <ul id="messages"></ul>
+    <div class="container">
+        <h2>Dynamic Table and Fields Creation</h2>
+        <button class="btn btn-primary" id="addTable">Add Table</button>
+          <form method="post" id="myForm" >
+            <label for="field1">專案名:</label>
+            <input type="text" name="project_name" id="field1">
+            <br>
+            <label for="field2">docker port號:</label>
+            <input type="number" name="port" id="field2">
+            <input type="submit" value="Submit">
+            <br>
+            <div class="danice"></div>
+        </form>
+        <ul id="messages"></ul>
+    </div>
 
     <script>
         const messagesDiv = document.getElementById('messages');
@@ -62,9 +69,10 @@
             // 获取表单数据
             const formData = {
                 project_name: $('#field1').val(),
-                port: $('#field2').val()
+                port: $('#field2').val(),
+                data: $(this).serialize()           
             };
-
+            
             // 发送 AJAX POST 请求
             $.ajax({
                 type: 'POST',
@@ -80,7 +88,44 @@
             });
         });
     </script>
+    <script>
+        $(document).ready(function() {
+            var tableIndex = 1;
 
+            // Function to add a new table
+            $("#addTable").click(function() {
+                var tableId = "table" + tableIndex;
+                var newTable = $("<div class='table-container'><h3>Table</h3><input type='text' class='form-control table-name' placeholder='Table Name'><table class='table table-bordered' id='" + tableId + "'><thead><tr><th>Field</th><th>ShowName</th><th>Migration</th><th>ModelType</th><th>IsRequire</th><th>Action</th></tr></thead><tbody></tbody></table></div>");
+                newTable.append("<button class='btn btn-success addField' data-table='" + tableId + "'>Add Field</button>");
+                newTable.append("<button class='btn btn-danger removeTable'>Remove Table</button>");
+                $(".danice").append(newTable);
+                tableIndex++;
+            });
+
+            // Function to add a new field within a table
+            $(document).on("click", ".addField", function() {
+                var tableId = $(this).data("table");
+                var newRow = $("<tr>");
+                newRow.append("<td><input type='text' name='" + tableId + "_field' class='form-control'></td>");
+                newRow.append("<td><input type='text' name='" + tableId + "_showName' class='form-control'></td>");
+                newRow.append("<td><input type='text' name='" + tableId + "_migration' class='form-control'></td>");
+                newRow.append("<td><input type='text' name='" + tableId + "_modelType' class='form-control'></td>");
+                newRow.append("<td><input type='text' name='" + tableId + "_isRequire' class='form-control'></td>");
+                newRow.append("<td><button class='btn btn-danger removeField'>Remove Field</button></td>");
+                $("#" + tableId + " tbody").append(newRow);
+            });
+
+            // Function to remove a table
+            $(document).on("click", ".removeTable", function() {
+                $(this).closest('.table-container').remove();
+            });
+
+            // Function to remove a field within a table
+            $(document).on("click", ".removeField", function() {
+                $(this).closest("tr").remove();
+            });
+        });
+    </script>
 </body>
 </html>
 

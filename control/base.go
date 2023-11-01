@@ -3,6 +3,7 @@ package control
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -40,11 +41,40 @@ func CHttp() {
 			return
 		}
 
+		// Iterate through all form parameters
+		// 解析一般的表单参数
+		projectName := c.PostForm("project_name")
+		port := c.PostForm("port")
+
+		// 解析包含数组索引的表单参数
+		var tableFields []string
+		var tableShowNames []string
+
+		// 遍历表单参数，找出包含数组索引的字段
+		for key, value := range c.Request.PostForm {
+			if strings.Contains(key, "_field") {
+				tableFields = append(tableFields, value[0])
+			} else if strings.Contains(key, "_showName") {
+				tableShowNames = append(tableShowNames, value[0])
+			}
+		}
+
+		// 打印解析结果
+		c.String(http.StatusOK, "Project Name: %s\n", projectName)
+		c.String(http.StatusOK, "Port: %s\n", port)
+
+		for i, field := range tableFields {
+			c.String(http.StatusOK, "Table %d Field: %s\n", i+1, field)
+		}
+
+		for i, showName := range tableShowNames {
+			c.String(http.StatusOK, "Table %d ShowName: %s\n", i+1, showName)
+		}
 		//wg.Add(1)
 		go func() {
 			project_name = form.ProjectName
 			No = form.Port
-			GenLaravel(statusChan)
+			//GenLaravel(statusChan)
 			//GenLaravel()
 		}()
 		//wg.Wait()
