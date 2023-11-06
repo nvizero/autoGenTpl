@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html >
+<html lang="en">
 <head>
     <title>My Web Page</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -10,22 +10,26 @@
 <body>
     <h1>{{.Title}}</h1>
     <div class="container">
-        <h2>Dynamic Table and Fields Creation</h2>
-        <button class="btn btn-primary" id="addTable">Add Table</button>
-          <form method="post" id="myForm" >
             <label for="field1">專案名:</label>
             <input type="text" name="project_name" id="field1">
             <br>
             <label for="field2">docker port號:</label>
             <input type="number" name="port" id="field2">
-            <input type="submit" value="Submit">
             <br>
-            <div class="danice"></div>
-        </form>
+            <br>
+            <button class="btn btn-primary" id="addTable">Add Table</button>
+            <input type="button" class="btn btn-primary submit-main" value="Submit">
+              <form method="post" id="myForm" >            
+                
+                <br>
+                
+                <div class="danice"></div>
+            </form>
         <ul id="messages"></ul>
     </div>
 
     <script>
+        var tables = {};
         const messagesDiv = document.getElementById('messages');
         const messageInput = document.getElementById('message');
         const ws = new WebSocket('ws://localhost:8080/ws'); // WebSocket 服务器地址
@@ -47,7 +51,7 @@
         // 使用正则表达式查找消息中的链接
             const linkRegex = /<a href="([^"]+)">([^<]+)<\/a>/g;
             let match;
-            
+
             // 遍历所有匹配的链接并替换它们
             while ((match = linkRegex.exec(message)) !== null) {
                 const link = document.createElement('a');
@@ -63,16 +67,17 @@
         }
 
         // 使用 jQuery 处理表单提交
-        $('#myForm').submit(function (event) {
-            event.preventDefault(); // 阻止表单默认提交
+        $('.submit-main').bind("click",function (event) {
+            
             $('#messages').empty();
             // 获取表单数据
             const formData = {
                 project_name: $('#field1').val(),
                 port: $('#field2').val(),
-                data: $(this).serialize()           
+                data: $(this).serialize()
             };
-            
+            console.table( Object.keys(tables).length)
+
             // 发送 AJAX POST 请求
             $.ajax({
                 type: 'POST',
@@ -87,45 +92,74 @@
                 }
             });
         });
-    </script>
-    <script>
+   
         $(document).ready(function() {
-            var tableIndex = 1;
+   
 
-            // Function to add a new table
-            $("#addTable").click(function() {
-                var tableId = "table" + tableIndex;
-                var newTable = $("<div class='table-container'><h3>Table</h3><input type='text' class='form-control table-name' placeholder='Table Name'><table class='table table-bordered' id='" + tableId + "'><thead><tr><th>Field</th><th>ShowName</th><th>Migration</th><th>ModelType</th><th>IsRequire</th><th>Action</th></tr></thead><tbody></tbody></table></div>");
-                newTable.append("<button class='btn btn-success addField' data-table='" + tableId + "'>Add Field</button>");
-                newTable.append("<button class='btn btn-danger removeTable'>Remove Table</button>");
-                $(".danice").append(newTable);
-                tableIndex++;
-            });
+    // Function to add a new table
+    $("#addTable").click(function() {
+        var tableIndex = getNextTableIndex();
+        var tableId = "table" + tableIndex;
+        var newTable = $("<div class='table-container'><h3>TableName</h3><input type='text' name='tablename_" + tableIndex + "' class='form-control table-name' placeholder='Table Name'><table class='table table-bordered' id='" + tableId + "'><thead><tr><th>Field</th><th>ShowName</th><th>Migration</th><th>ModelType</th><th>IsRequire</th><th>Action</th></tr></thead><tbody></tbody></table></div>");
+        newTable.append("<button class='btn btn-success addField' data-table='" + tableId + "'>Add Field</button>");
+        newTable.append("<button class='btn btn-danger removeTable'>Remove Table</button>");
+        $(".danice").append(newTable);
+    });
 
-            // Function to add a new field within a table
-            $(document).on("click", ".addField", function() {
-                var tableId = $(this).data("table");
-                var newRow = $("<tr>");
-                newRow.append("<td><input type='text' name='" + tableId + "_field' class='form-control'></td>");
-                newRow.append("<td><input type='text' name='" + tableId + "_showName' class='form-control'></td>");
-                newRow.append("<td><input type='text' name='" + tableId + "_migration' class='form-control'></td>");
-                newRow.append("<td><input type='text' name='" + tableId + "_modelType' class='form-control'></td>");
-                newRow.append("<td><input type='text' name='" + tableId + "_isRequire' class='form-control'></td>");
-                newRow.append("<td><button class='btn btn-danger removeField'>Remove Field</button></td>");
-                $("#" + tableId + " tbody").append(newRow);
-            });
+    // Function to add a new field within a table
+    $(document).on("click", ".addField", function() {
+        var tableId = $(this).data("table");
+        var tableIndex = extractTableIndex(tableId);
+        var dynamicId = getNextFieldIndex(tableIndex);
+        var newRow = $("<tr>");
+        newRow.append("<td><input type='text' name='" + tableId + "_fieldname_" + dynamicId + "' class='form-control'></td>");
+        newRow.append("<td><input type='text' name='" + tableId + "_showName_" + dynamicId + "' class='form-control'></td>");
+        newRow.append("<td><input type='text' name='" + tableId + "_migration_" + dynamicId + "' class='form-control'></td>");
+        newRow.append("<td><input type='text' name='" + tableId + "_modelType_" + dynamicId + "' class='form-control'></td>");
+        newRow.append("<td><select name='" + tableId + "_isRequire_" + dynamicId + "' class='form-control'><option value='1'>1</option></select></td>");
+        newRow.append("<td><button class='btn btn-danger removeField'>Remove Field</button></td>");
+        $("#" + tableId + " tbody").append(newRow);
+    });
 
-            // Function to remove a table
-            $(document).on("click", ".removeTable", function() {
-                $(this).closest('.table-container').remove();
-            });
+    // Function to remove a table
+    $(document).on("click", ".removeTable", function() {
+        var tableId = $(this).closest('.table-container').find('table').attr('id');
+        var tableIndex = extractTableIndex(tableId);
+        delete tables[tableIndex];
+        $(this).closest('.table-container').remove();
+    });
 
-            // Function to remove a field within a table
-            $(document).on("click", ".removeField", function() {
-                $(this).closest("tr").remove();
-            });
-        });
+    // Function to remove a field within a table
+    $(document).on("click", ".removeField", function() {
+        $(this).closest("tr").remove();
+    });
+
+    // Helper function to get the next available table index
+    function getNextTableIndex() {
+        var tableIndex = 1;
+        while (tables[tableIndex]) {
+            tableIndex++;
+        }
+        tables[tableIndex] = {};
+        return tableIndex;
+    }
+
+    // Helper function to extract table index from table ID
+    function extractTableIndex(tableId) {
+        return parseInt(tableId.replace("table", ""));
+    }
+
+    // Helper function to get the next available field index for a table
+    function getNextFieldIndex(tableIndex) {
+        var fieldIndex = 1;
+        while (tables[tableIndex][fieldIndex]) {
+            fieldIndex++;
+        }
+        tables[tableIndex][fieldIndex] = true;
+        return fieldIndex;
+    }
+});
+
     </script>
 </body>
 </html>
-

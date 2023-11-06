@@ -1,19 +1,11 @@
 package main
 
-import (
-	"sync"
-	"tpl/control"
-)
-
-var dbname string = "golang_gen_laravel"
-var wg sync.WaitGroup
-var status = make(chan string, 20) // 使用 make 函数初始化通道
+import "tpl/control"
 
 func main() {
+
 	control.CHttp()
 	//取出資料
-	//wg.Wait()
-	//control.TestAI()
 	//建立假資料
 	// lara := control.InitFakeData()
 	//建立laravel DB資料

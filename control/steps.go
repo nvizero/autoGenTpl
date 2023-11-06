@@ -78,7 +78,8 @@ func RunDockerCmd(projectName, dockerVPara, dockerPort, dockerHubImg, laravel_up
 }
 
 var txt = `
-
+  hi
+  hwllo world
   `
 
 func TestAI() {

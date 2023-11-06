@@ -11,12 +11,12 @@ func RunCmd(params []interface{}, cmd string, statusChan chan string) {
 	cmdStr := fmt.Sprintf(cmd, params...)
 	fmt.Println("-- run --\n", cmdStr)
 	//out, err := exec.Command("/bin/sh", "-c", cmdStr).Output()
-	_, err := exec.Command("/bin/sh", "-c", cmdStr).Output()
+	out, err := exec.Command("/bin/sh", "-c", cmdStr).Output()
 	if err != nil {
 		log.Fatal("--", err)
 	}
 	//statusChan <- string(out)
-	//fmt.Printf("%s\n", out)
+	fmt.Printf("%s\n", out)
 }
 
 // 執行命令

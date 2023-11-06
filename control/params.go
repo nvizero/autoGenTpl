@@ -19,6 +19,7 @@ var (
 )
 
 const (
+	update_date_cmd  = "ssh ubuntu@192.168.64.12 && ls"
 	dockerDir        = "/var/www"
 	localhostDir     = "/Users/tsengyenchi/victor/php/tmp"
 	gitRepo          = "git@github.com:nvizero/demo.git"

@@ -3,15 +3,14 @@ package control
 import (
 	"fmt"
 	"net/http"
-	"strings"
-	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
 
 var statusChan = make(chan string, 20)
-var wg sync.WaitGroup
+
+//var wg sync.WaitGroup
 
 type MyForm struct {
 	ProjectName string `form:"project_name"`
@@ -26,13 +25,13 @@ var upgrader = websocket.Upgrader{
 func CHttp() {
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*.html") // Load HTML templates from the "templates" directory
-
 	r.GET("/", func(c *gin.Context) {
 		data := gin.H{
 			"Title": "Welcome to My Web Page",
 		}
 		c.HTML(http.StatusOK, "index.html", data) // Render the HTML template
 	})
+
 	// Handle the form submission
 	r.POST("/submit", func(c *gin.Context) {
 		var form MyForm
@@ -41,42 +40,22 @@ func CHttp() {
 			return
 		}
 
-		// Iterate through all form parameters
-		// 解析一般的表单参数
-		projectName := c.PostForm("project_name")
-		port := c.PostForm("port")
+		//projectName := c.PostForm("project_name")
+		//port := c.PostForm("port")
+		ddata := c.PostForm("data")
+		fmt.Println(ddata)
+		// 现在 paramMap 包含了所有的参数
+		// data := ParseData(ddata)
+		// fmt.Println(data)
 
-		// 解析包含数组索引的表单参数
-		var tableFields []string
-		var tableShowNames []string
-
-		// 遍历表单参数，找出包含数组索引的字段
-		for key, value := range c.Request.PostForm {
-			if strings.Contains(key, "_field") {
-				tableFields = append(tableFields, value[0])
-			} else if strings.Contains(key, "_showName") {
-				tableShowNames = append(tableShowNames, value[0])
-			}
-		}
-
-		// 打印解析结果
-		c.String(http.StatusOK, "Project Name: %s\n", projectName)
-		c.String(http.StatusOK, "Port: %s\n", port)
-
-		for i, field := range tableFields {
-			c.String(http.StatusOK, "Table %d Field: %s\n", i+1, field)
-		}
-
-		for i, showName := range tableShowNames {
-			c.String(http.StatusOK, "Table %d ShowName: %s\n", i+1, showName)
-		}
+		// 解析动态的表格参数
+		// 打印动态生成的字段
 		//wg.Add(1)
-		go func() {
-			project_name = form.ProjectName
-			No = form.Port
-			//GenLaravel(statusChan)
-			//GenLaravel()
-		}()
+		//go func() {
+		//	project_name = form.ProjectName
+		//	No = form.Port
+		//	//GenLaravel(statusChan)
+		//}()
 		//wg.Wait()
 		//c.HTML(http.StatusOK, "redirect.html", data) // Render the HTML template
 		// 回應JSON
@@ -100,6 +79,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
+
 	defer conn.Close()
 
 	go func() {

@@ -20,7 +20,6 @@ func RunMigration(projectName string) {
 	statusChan <- "2建立 基本 database 執行php artisan migrate"
 	params = []interface{}{projectName, cmd_sh[1]}
 	utils.RunCmd(params, docker_run_sh, statusChan)
-
 }
 func GetTbGenerateMigrateTable(projectid int32, projectName string) {
 	arg := db.WhereTbByPIDParams{
@@ -40,6 +39,7 @@ func GetTbGenerateMigrateTable(projectid int32, projectName string) {
 	CreateSideMenu(projectName)
 	RunMigration(projectName)
 }
+
 func CreateController(tablename, projectName string, tableid int32) {
 	var controller_txt string
 	directory := localhostDir + "/" + projectName + ControllerDir
