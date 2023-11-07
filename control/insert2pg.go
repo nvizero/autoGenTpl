@@ -36,6 +36,7 @@ func (p *Pj) ChkProjectName() bool {
 func (p *Pj) GenProject() {
 	arg := db.CreateProjectsParams{
 		Name:  sql.NullString{String: p.ProjectName, Valid: true},
+		Port:  sql.NullInt32{Int32: p.DockerPort, Valid: true},
 		IsGen: sql.NullInt32{Int32: 0, Valid: true},
 	}
 	project, err := p.Pg.CreateProjects(context.Background(), arg)
@@ -130,8 +131,8 @@ func InitFakeData() Pj {
 	}
 	Project = Pj{
 		Pg:          db.ConnDev(),
-		ProjectName: "isb82",
-		DockerPort:  2082,
+		ProjectName: "isb20",
+		DockerPort:  2020,
 		Tables:      fdata,
 	}
 	Project.Controller()
