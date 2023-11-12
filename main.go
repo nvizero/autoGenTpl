@@ -8,10 +8,10 @@ func main() {
 	//control.Gomain()
 	//取出資料
 	//建立假資料
-	// lara := control.InitFakeData()
+	//lara := control.InitFakeData()
 	//建立laravel DB資料
-	// control.GetTbGenerateMigrateTable(lara.ProjectID, lara.ProjectName)
-	// control.GetTbGenerateMigrateTable(5, "isb82")
+	//control.GetTbGenerateMigrateTable(lara.ProjectID, lara.ProjectName)
+	// control.GetTbGenerateMigrateTable(16, "yenchi")
 	//清除測試資料
 	//control.TrancateData()
 }

@@ -90,6 +90,24 @@ func (q *Queries) GetProject(ctx context.Context, id int32) (Project, error) {
 	return i, err
 }
 
+const latestOne = `-- name: LatestOne :one
+SELECT id,name,port FROM projects
+ORDER BY ID desc LIMIT 1
+`
+
+type LatestOneRow struct {
+	ID   int32          `json:"id"`
+	Name sql.NullString `json:"name"`
+	Port sql.NullInt32  `json:"port"`
+}
+
+func (q *Queries) LatestOne(ctx context.Context) (LatestOneRow, error) {
+	row := q.db.QueryRowContext(ctx, latestOne)
+	var i LatestOneRow
+	err := row.Scan(&i.ID, &i.Name, &i.Port)
+	return i, err
+}
+
 const listProjects = `-- name: ListProjects :many
 SELECT id, name, port, is_gen, created_at FROM projects
 ORDER BY id desc

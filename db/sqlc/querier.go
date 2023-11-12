@@ -23,6 +23,7 @@ type Querier interface {
 	GetTFByfID(ctx context.Context, tableID sql.NullInt32) ([]TbField, error)
 	GetTFBytID(ctx context.Context, tableID sql.NullInt32) ([]TbField, error)
 	GetTb(ctx context.Context, id int32) (Tb, error)
+	LatestOne(ctx context.Context) (LatestOneRow, error)
 	ListProjects(ctx context.Context, arg ListProjectsParams) ([]Project, error)
 	ListTb(ctx context.Context, arg ListTbParams) ([]Tb, error)
 	ListTbField(ctx context.Context, arg ListTbFieldParams) ([]TbField, error)

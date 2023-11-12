@@ -63,7 +63,6 @@ func (p *Pj) CheckTable(name string, pid int32) bool {
 		ProjectID: sql.NullInt32{Int32: pid, Valid: true},
 	}
 	t, err := p.Pg.CheckTb(context.Background(), arg)
-	fmt.Println(t, "qweqweqweqweqweqweqweqweqwettttt")
 	ChkErr(err)
 	if t.ID > 0 {
 		p.TableId = t.ID
@@ -81,7 +80,6 @@ func (p *Pj) GenTable(table string) int32 {
 	}
 	t, err := p.Pg.CreateTb(context.Background(), arg)
 	ChkErr(err)
-	fmt.Println(t, t.ID, "----------------------------a")
 	cache.SetRedis(t.Name.String)
 	p.TableId = t.ID
 	return t.ID
@@ -168,8 +166,8 @@ func InitFakeData() Pj {
 	}
 	Project = Pj{
 		Pg:          db.ConnDev(),
-		ProjectName: "isb22",
-		DockerPort:  2022,
+		ProjectName: "isb24",
+		DockerPort:  2024,
 		Tables:      fdata,
 	}
 	Project.Controller()

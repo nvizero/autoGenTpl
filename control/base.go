@@ -55,13 +55,16 @@ func CHttp() {
 		c.JSON(404, gin.H{"message": "Not found"})
 	})
 
+	r.POST("/generateLaravel", func(c *gin.Context) {
+		GenerateLaravelByLest()
+		c.JSON(http.StatusOK, gin.H{"message": "auto generate laravel successfully"})
+	})
 	r.POST("/createtable", func(c *gin.Context) {
 		var table Table
 		if err := c.ShouldBindJSON(&table); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
 		for _, value := range table.Attr {
 			fmt.Println("Original value:", value)
 			values, err := url.ParseQuery(value)

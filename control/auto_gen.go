@@ -39,10 +39,6 @@ func GenLaravel(statusChan chan string) {
 	//	wg.Add(1)
 	RunDockerCmd(projectName, dockerVPara, dockerPort, dockerHubImg, laravel_update, statusChan)
 
-	//	建立額外laravel功能
-	//statusChan <- "建立額外laravel功能"
-	//	Laravel(projectName, ControllerDir, ControllerName, TableName, statusChan)
-
 	//statusChan <- "推上git分支"
 	//GitPushBranch(projectName, projectDir, statusChan)
 	defer func() {

@@ -11,6 +11,11 @@ INSERT INTO projects (
 SELECT * FROM projects
 WHERE name like $1 or port = $2;
 
+-- name: LatestOne :one
+SELECT id,name,port FROM projects
+ORDER BY ID desc LIMIT 1;
+
+
 -- name: GetProject :one
 SELECT * FROM projects
 WHERE id = $1 LIMIT 1;

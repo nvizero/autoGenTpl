@@ -21,6 +21,20 @@ func RunMigration(projectName string) {
 	params = []interface{}{projectName, cmd_sh[1]}
 	utils.RunCmd(params, docker_run_sh, statusChan)
 }
+
+// 讀最後一筆並建立LARAVEL
+func GenerateLaravelByLest() {
+	data, err := dbpg.LatestOne(ctx)
+	ChkErr(err)
+	Project = Pj{
+		ProjectName: data.Name.String,
+		ProjectID:   data.ID,
+		DockerPort:  data.Port.Int32,
+	}
+	GenLaravel(statusChan)
+	GetTbGenerateMigrateTable(data.ID, data.Name.String)
+}
+
 func GetTbGenerateMigrateTable(projectid int32, projectName string) {
 	arg := db.WhereTbByPIDParams{
 		Limit:     10,
