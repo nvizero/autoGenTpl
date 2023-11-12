@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"tpl/cache"
 	db "tpl/db/sqlc"
 	"tpl/utils"
 
@@ -13,6 +14,13 @@ import (
 var rkey string = "fields"
 var ctx = context.Background()
 
+type LaraSetting struct {
+	Field     string
+	ShowName  string
+	Migration string
+	ModelType string
+	IsRequire int32
+}
 type Pj struct {
 	ProjectName string
 	ProjectID   int32
@@ -21,11 +29,16 @@ type Pj struct {
 	FieldKey    map[string]string
 	Pg          *db.Queries
 	Redis       *redis.Client
+	TableId     int32
+	TempField   LaraSetting
 }
 
 func (p *Pj) ChkProjectName() bool {
-	arg := sql.NullString{String: p.ProjectName, Valid: true}
-	project, err := p.Pg.GetProjectByName(context.Background(), arg)
+	arg := db.CheckProjectParams{
+		Name: sql.NullString{String: p.ProjectName, Valid: true},
+		Port: sql.NullInt32{Int32: p.DockerPort, Valid: true},
+	}
+	project, err := p.Pg.CheckProject(context.Background(), arg)
 	ChkErr(err)
 	if project.ID == 0 {
 		return false
@@ -44,6 +57,22 @@ func (p *Pj) GenProject() {
 	p.ProjectID = project.ID
 }
 
+func (p *Pj) CheckTable(name string, pid int32) bool {
+	arg := db.CheckTbParams{
+		Name:      sql.NullString{String: name, Valid: true},
+		ProjectID: sql.NullInt32{Int32: pid, Valid: true},
+	}
+	t, err := p.Pg.CheckTb(context.Background(), arg)
+	fmt.Println(t, "qweqweqweqweqweqweqweqweqwettttt")
+	ChkErr(err)
+	if t.ID > 0 {
+		p.TableId = t.ID
+		return false
+	} else {
+		return true
+	}
+}
+
 func (p *Pj) GenTable(table string) int32 {
 	arg := db.CreateTbParams{
 		Name:      sql.NullString{String: table, Valid: true},
@@ -52,6 +81,9 @@ func (p *Pj) GenTable(table string) int32 {
 	}
 	t, err := p.Pg.CreateTb(context.Background(), arg)
 	ChkErr(err)
+	fmt.Println(t, t.ID, "----------------------------a")
+	cache.SetRedis(t.Name.String)
+	p.TableId = t.ID
 	return t.ID
 }
 
@@ -84,28 +116,33 @@ func (p *Pj) CheckFieldsRedis(hashKey string) bool {
 // 写入哈希表
 func (p *Pj) WriteToRedis(data map[string]string, hashKey string) {
 	for key, value := range data {
-		fmt.Println(fmt.Sprintf("%s", value), "---")
 		err := p.Redis.HSet(ctx, hashKey, fmt.Sprintf("%s", key), value).Err()
 		ChkErr(err)
 	}
+}
+
+func (p *Pj) ExecCreateTableField() {
+	p.CreateTableField(p.TableId, p.TempField)
+}
+
+func (p *Pj) CreateTableField(tableId int32, v LaraSetting) {
+	arg := db.CreateTbFieldParams{
+		TableID:   sql.NullInt32{Int32: tableId, Valid: true},
+		FieldName: sql.NullString{String: v.Field, Valid: true},
+		Migration: sql.NullString{String: v.Migration, Valid: true},
+		ShowName:  sql.NullString{String: v.ShowName, Valid: true},
+		ModelType: sql.NullString{String: v.ModelType, Valid: true},
+		IsRequire: sql.NullInt32{Int32: v.IsRequire, Valid: true},
+	}
+	_, err := p.Pg.CreateTbField(context.Background(), arg)
+	ChkErr(err)
 }
 
 func (p *Pj) Parse2TableField() {
 	for table, fields := range p.Tables {
 		tableId := p.GenTable(table)
 		for _, v := range fields {
-			arg := db.CreateTbFieldParams{
-				TableID:   sql.NullInt32{Int32: tableId, Valid: true},
-				FieldName: sql.NullString{String: v.Field, Valid: true},
-				Migration: sql.NullString{String: v.Migration, Valid: true},
-				ShowName:  sql.NullString{String: v.ShowName, Valid: true},
-				ModelType: sql.NullString{String: v.ModelType, Valid: true},
-				IsRequire: sql.NullInt32{Int32: v.IsRequire, Valid: true},
-			}
-			_, err := p.Pg.CreateTbField(context.Background(), arg)
-			ChkErr(err)
-			//fmt.Println(tf)
-
+			p.CreateTableField(tableId, v)
 		}
 	}
 }
@@ -131,8 +168,8 @@ func InitFakeData() Pj {
 	}
 	Project = Pj{
 		Pg:          db.ConnDev(),
-		ProjectName: "isb20",
-		DockerPort:  2020,
+		ProjectName: "isb22",
+		DockerPort:  2022,
 		Tables:      fdata,
 	}
 	Project.Controller()

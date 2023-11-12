@@ -10,6 +10,29 @@ import (
 	"database/sql"
 )
 
+const checkProject = `-- name: CheckProject :one
+SELECT id, name, port, is_gen, created_at FROM projects
+WHERE name like $1 or port = $2
+`
+
+type CheckProjectParams struct {
+	Name sql.NullString `json:"name"`
+	Port sql.NullInt32  `json:"port"`
+}
+
+func (q *Queries) CheckProject(ctx context.Context, arg CheckProjectParams) (Project, error) {
+	row := q.db.QueryRowContext(ctx, checkProject, arg.Name, arg.Port)
+	var i Project
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Port,
+		&i.IsGen,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const createProjects = `-- name: CreateProjects :one
 INSERT INTO projects (
     name,
@@ -56,24 +79,6 @@ WHERE id = $1 LIMIT 1
 
 func (q *Queries) GetProject(ctx context.Context, id int32) (Project, error) {
 	row := q.db.QueryRowContext(ctx, getProject, id)
-	var i Project
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Port,
-		&i.IsGen,
-		&i.CreatedAt,
-	)
-	return i, err
-}
-
-const getProjectByName = `-- name: GetProjectByName :one
-SELECT id, name, port, is_gen, created_at FROM projects
-WHERE name like $1
-`
-
-func (q *Queries) GetProjectByName(ctx context.Context, name sql.NullString) (Project, error) {
-	row := q.db.QueryRowContext(ctx, getProjectByName, name)
 	var i Project
 	err := row.Scan(
 		&i.ID,

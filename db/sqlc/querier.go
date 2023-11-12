@@ -10,6 +10,8 @@ import (
 )
 
 type Querier interface {
+	CheckProject(ctx context.Context, arg CheckProjectParams) (Project, error)
+	CheckTb(ctx context.Context, arg CheckTbParams) (CheckTbRow, error)
 	CreateProjects(ctx context.Context, arg CreateProjectsParams) (Project, error)
 	CreateTb(ctx context.Context, arg CreateTbParams) (Tb, error)
 	CreateTbField(ctx context.Context, arg CreateTbFieldParams) (TbField, error)
@@ -18,7 +20,6 @@ type Querier interface {
 	DeleteTbByPID(ctx context.Context, projectID sql.NullInt32) error
 	DeleteTbFieldByTableID(ctx context.Context, tableID sql.NullInt32) error
 	GetProject(ctx context.Context, id int32) (Project, error)
-	GetProjectByName(ctx context.Context, name sql.NullString) (Project, error)
 	GetTFByfID(ctx context.Context, tableID sql.NullInt32) ([]TbField, error)
 	GetTFBytID(ctx context.Context, tableID sql.NullInt32) ([]TbField, error)
 	GetTb(ctx context.Context, id int32) (Tb, error)

@@ -7,9 +7,9 @@ INSERT INTO projects (
   $1, $2, $3
 ) RETURNING *;
 
--- name: GetProjectByName :one
+-- name: CheckProject :one
 SELECT * FROM projects
-WHERE name like $1 ;
+WHERE name like $1 or port = $2;
 
 -- name: GetProject :one
 SELECT * FROM projects

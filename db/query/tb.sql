@@ -17,6 +17,11 @@ ORDER BY id
 LIMIT $1
 OFFSET $2;
 
+-- name: CheckTb :one
+SELECT id,name FROM tb 
+WHERE project_id = $1
+AND name = $2;
+
 -- name: WhereTbByPID :many
 SELECT * FROM tb 
 WHERE project_id = $3

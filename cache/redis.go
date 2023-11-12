@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -30,6 +31,26 @@ func writeToRedis(client *redis.Client, data map[int]string, hashKey string) err
 		}
 	}
 	return nil
+}
+
+func GetRedis(name string) bool {
+	client := Conn2Redis()
+	defer client.Close()
+	d := client.Get(ctx, name)
+	b, err := d.Bool()
+	if err != nil {
+		fmt.Println(err)
+	}
+	if b {
+		return false
+	}
+	return false
+}
+
+func SetRedis(name string) {
+	client := Conn2Redis()
+	defer client.Close()
+	client.Set(ctx, name, 1, 3600*time.Millisecond)
 }
 
 func readFromRedis(client *redis.Client, hashKey string) (map[string]string, error) {

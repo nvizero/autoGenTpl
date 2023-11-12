@@ -10,6 +10,29 @@ import (
 	"database/sql"
 )
 
+const checkTb = `-- name: CheckTb :one
+SELECT id,name FROM tb 
+WHERE project_id = $1
+AND name = $2
+`
+
+type CheckTbParams struct {
+	ProjectID sql.NullInt32  `json:"project_id"`
+	Name      sql.NullString `json:"name"`
+}
+
+type CheckTbRow struct {
+	ID   int32          `json:"id"`
+	Name sql.NullString `json:"name"`
+}
+
+func (q *Queries) CheckTb(ctx context.Context, arg CheckTbParams) (CheckTbRow, error) {
+	row := q.db.QueryRowContext(ctx, checkTb, arg.ProjectID, arg.Name)
+	var i CheckTbRow
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
+}
+
 const createTb = `-- name: CreateTb :one
 INSERT INTO tb (
     name,
