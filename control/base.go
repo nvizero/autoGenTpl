@@ -3,7 +3,6 @@ package control
 import (
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -18,17 +17,6 @@ import (
 )
 
 var statusChan = make(chan string, 20)
-
-//var wg sync.WaitGroup
-
-// var upgrader = websocket.Upgrader{
-// 	ReadBufferSize:    4096,
-// 	WriteBufferSize:   4096,
-// 	EnableCompression: true,
-// 	CheckOrigin: func(r *http.Request) bool {
-// 		return true
-// 	},
-// }
 
 var ua string
 var project Pj
@@ -119,30 +107,10 @@ func CHttp() {
 			DockerPort:  form.Port,
 		}
 
-		// if !project.ChkProjectName() {
-		project.GenProject()
-		// }
-		// 现在 paramMap 包含了所有的参数
-		// data := ParseData(ddata)
-		// fmt.Println(data)
-
-		// 解析动态的表格参数
-		// 打印动态生成的字段
-		//wg.Add(1)
-		//go func() {
-		//	project_name = form.ProjectName
-		//	No = form.Port
-		//	//GenLaravel(statusChan)
-		//}()
-		//wg.Wait()
-		//c.HTML(http.StatusOK, "redirect.html", data) // Render the HTML template
-		// 回應JSON
+		if !project.ChkProjectName() {
+			project.GenProject()
+		}
 		c.JSON(http.StatusOK, gin.H{"id": project.ProjectID, "message": "JSON data received successfully"})
-	})
-
-	r.GET("/ws", func(c *gin.Context) {
-		// 處理 WebSocket 連接
-		handleWebSocket(c.Writer, c.Request)
 	})
 
 	public := r.Group("/socket")
@@ -194,7 +162,6 @@ func SocketHandler(c *gin.Context) {
 			}{
 				Reply: currentTime + ":" + ss,
 			}
-			fmt.Println("ssssssssssssssss", ss)
 			// WriteJSON 将发送一个 JSON 编码的响应给客户端
 			err := ws.WriteJSON(message)
 			if err != nil {
@@ -215,124 +182,3 @@ func SocketHandler(c *gin.Context) {
 }
 
 var addr = flag.String("addr", ":8080", "http service address")
-
-func serveHome(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.URL)
-	if r.URL.Path != "/" {
-		http.Error(w, "Not found", http.StatusNotFound)
-		return
-	}
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-	http.ServeFile(w, r, "home.html")
-}
-
-func Gomain() {
-	flag.Parse()
-	hub := newHub()
-	go hub.run()
-	http.HandleFunc("/", serveHome)
-	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		serveWs(hub, w, r)
-	})
-	server := &http.Server{
-		Addr:              *addr,
-		ReadHeaderTimeout: 3 * time.Second,
-	}
-	err := server.ListenAndServe()
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
-	}
-}
-
-func handleWebSocket2(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		return
-	}
-	defer conn.Close()
-
-	go func() {
-		for {
-			select {
-			case status := <-statusChan:
-				// 在这里将状态信息发送到WebSocket连接
-				if err := conn.WriteMessage(websocket.TextMessage, []byte(status)); err != nil {
-
-					fmt.Println(websocket.TextMessage)
-					return
-				}
-			}
-		}
-	}()
-
-	go func() {
-		for {
-			messageType, p, err := conn.ReadMessage()
-			if err != nil {
-				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-					fmt.Println("WebSocket error:", err)
-				}
-				return
-			}
-			fmt.Printf("Received message: %s\n", string(p))
-			if messageType == websocket.TextMessage {
-				// 处理文本消息
-				fmt.Printf("Received message: %s\n", string(p))
-			}
-		}
-	}()
-
-}
-
-func handleWebSocket(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		return
-	}
-	defer conn.Close()
-
-	// 启动一个Goroutine用于发送WebSocket消息
-	go func() {
-		ticker := time.NewTicker(1 * time.Second)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case status := <-statusChan:
-				// 在这里将状态信息发送到WebSocket连接
-				if err := conn.WriteMessage(websocket.TextMessage, []byte(status)); err != nil {
-					fmt.Println("WebSocket error:", err)
-					return
-				}
-			case <-ticker.C:
-				// 定时器触发，定期发送消息
-				message := "Current time: " + time.Now().Format(time.RFC3339)
-				if err := conn.WriteMessage(websocket.TextMessage, []byte(message)); err != nil {
-					fmt.Println("WebSocket error:", err)
-					return
-				}
-			}
-		}
-	}()
-
-	// 处理WebSocket接收的消息
-	go func() {
-		for {
-			messageType, p, err := conn.ReadMessage()
-			if err != nil {
-				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-					fmt.Println("WebSocket error:", err)
-				}
-				return
-			}
-			fmt.Printf("Received message: %s\n", string(p))
-			if messageType == websocket.TextMessage {
-				// 处理文本消息
-				fmt.Printf("Received message: %s\n", string(p))
-			}
-		}
-	}()
-}
