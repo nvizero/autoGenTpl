@@ -185,26 +185,21 @@ func SocketHandler(c *gin.Context) {
 
 	// Goroutine to send periodic messages
 	go func() {
-		ticker := time.NewTicker(time.Second) // 定时器，每两秒触发一次
-		defer ticker.Stop()
 
 		for {
-			select {
-			case <-ticker.C:
-				currentTime := time.Now().Format("2006-01-02 15:04:05")
-				ss := <-statusChan
-				message := struct {
-					Reply string `json:"reply"`
-				}{
-					Reply: "Periodic message..." + ss + currentTime,
-				}
-				fmt.Println("ssssssssssssssss", ss)
-				// WriteJSON 将发送一个 JSON 编码的响应给客户端
-				err := ws.WriteJSON(message)
-				if err != nil {
-					fmt.Println("WebSocket WriteJSON error:", err)
-					return
-				}
+			currentTime := time.Now().Format("2006-01-02 15:04:05")
+			ss := <-statusChan
+			message := struct {
+				Reply string `json:"reply"`
+			}{
+				Reply: currentTime + ":" + ss,
+			}
+			fmt.Println("ssssssssssssssss", ss)
+			// WriteJSON 将发送一个 JSON 编码的响应给客户端
+			err := ws.WriteJSON(message)
+			if err != nil {
+				fmt.Println("WebSocket WriteJSON error:", err)
+				return
 			}
 		}
 	}()
