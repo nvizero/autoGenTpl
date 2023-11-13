@@ -9,22 +9,19 @@ import (
 
 // 執行DOCKER 內命令
 func RunCmd(params []interface{}, cmd string, statusChan chan string) {
-	env := "USE_WEB_WOCKET"
-	socket := GetEnv(env)
 	cmdStr := fmt.Sprintf(cmd, params...)
-	if socket == "Y" {
-		ExecCmd2(cmdStr, statusChan)
-	} else {
-		fmt.Println("-- run --\n", cmdStr)
-		//out, err := exec.Command("/bin/sh", "-c", cmdStr).Output()
-		out, err := exec.Command("/bin/sh", "-c", cmdStr).Output()
-		if err != nil {
-			fmt.Println(cmdStr)
-			log.Fatal("錯--", err)
-		}
-		statusChan <- string(out)
-		fmt.Printf("%s\n", out)
+	fmt.Println("-- run --\n", cmdStr)
+	//out, err := exec.Command("/bin/sh", "-c", cmdStr).Output()
+	out, err := exec.Command("/bin/sh", "-c", cmdStr).Output()
+	if err != nil {
+		fmt.Println(cmdStr)
+		log.Fatal("錯--", err)
 	}
+	statusChan <- string(out)
+	// 在这里将消息发送到 WebSocket 客户端
+	fmt.Printf("%s\n", out)
+
+	// 在这里将消息发送到 WebSocket 客户端
 }
 
 // 執行命令

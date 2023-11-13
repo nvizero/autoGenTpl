@@ -144,6 +144,10 @@ func CHttp() {
 		// 處理 WebSocket 連接
 		handleWebSocket(c.Writer, c.Request)
 	})
+
+	public := r.Group("/socket")
+	public.GET("", SocketHandler)
+
 	r.GET("/ping", func(c *gin.Context) {
 		c.Header("Content-Type", "application/json")
 		c.JSON(http.StatusOK, gin.H{
@@ -157,6 +161,62 @@ func CHttp() {
 	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE"}
 	r.Use(cors.New(config))
 	r.Run(":8080")
+}
+
+func SocketHandler(c *gin.Context) {
+	upGrader := websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}
+
+	ws, err := upGrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		closeSocketErr := ws.Close()
+		if closeSocketErr != nil {
+			fmt.Println("Error closing WebSocket:", closeSocketErr)
+		}
+	}()
+
+	// Goroutine to send periodic messages
+	go func() {
+		ticker := time.NewTicker(time.Second) // 定时器，每两秒触发一次
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				currentTime := time.Now().Format("2006-01-02 15:04:05")
+				ss := <-statusChan
+				message := struct {
+					Reply string `json:"reply"`
+				}{
+					Reply: "Periodic message..." + ss + currentTime,
+				}
+				fmt.Println("ssssssssssssssss", ss)
+				// WriteJSON 将发送一个 JSON 编码的响应给客户端
+				err := ws.WriteJSON(message)
+				if err != nil {
+					fmt.Println("WebSocket WriteJSON error:", err)
+					return
+				}
+			}
+		}
+	}()
+
+	for {
+		// ReadMessage 是一个阻塞调用，它将等待直到收到消息
+		_, _, err := ws.ReadMessage()
+		if err != nil {
+			fmt.Println("WebSocket ReadMessage error:", err)
+			break
+		}
+	}
 }
 
 var addr = flag.String("addr", ":8080", "http service address")
@@ -192,7 +252,7 @@ func Gomain() {
 	}
 }
 
-func handleWebSocket(w http.ResponseWriter, r *http.Request) {
+func handleWebSocket2(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return
@@ -230,4 +290,54 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
+}
+
+func handleWebSocket(w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		return
+	}
+	defer conn.Close()
+
+	// 启动一个Goroutine用于发送WebSocket消息
+	go func() {
+		ticker := time.NewTicker(1 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case status := <-statusChan:
+				// 在这里将状态信息发送到WebSocket连接
+				if err := conn.WriteMessage(websocket.TextMessage, []byte(status)); err != nil {
+					fmt.Println("WebSocket error:", err)
+					return
+				}
+			case <-ticker.C:
+				// 定时器触发，定期发送消息
+				message := "Current time: " + time.Now().Format(time.RFC3339)
+				if err := conn.WriteMessage(websocket.TextMessage, []byte(message)); err != nil {
+					fmt.Println("WebSocket error:", err)
+					return
+				}
+			}
+		}
+	}()
+
+	// 处理WebSocket接收的消息
+	go func() {
+		for {
+			messageType, p, err := conn.ReadMessage()
+			if err != nil {
+				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+					fmt.Println("WebSocket error:", err)
+				}
+				return
+			}
+			fmt.Printf("Received message: %s\n", string(p))
+			if messageType == websocket.TextMessage {
+				// 处理文本消息
+				fmt.Printf("Received message: %s\n", string(p))
+			}
+		}
+	}()
 }

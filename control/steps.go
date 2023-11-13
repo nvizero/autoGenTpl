@@ -3,10 +3,12 @@ package control
 import (
 	"fmt"
 	"tpl/utils"
+
+	"github.com/gorilla/websocket"
 )
 
 // 建立額外laravel功能
-func Laravel(projectName, ControllerDir, ContName, TableName string, statusChan chan string) {
+func Laravel(projectName, ControllerDir, ContName, TableName string, statusChan chan string, ws *websocket.Conn) {
 
 	//建立Controller
 	utils.GenController(ControllerDir, ContName, TableName)
